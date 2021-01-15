@@ -70,22 +70,36 @@ ListOfMonuments* MonumentsReader(){
   ListOfMonuments* monuments = createMonuments(countMonuments(inputFile));
   loadListOfMonuments(inputFile, monuments);
 
-
   fclose(inputFile);
-
-  /* WRITING cities with population greater than or equal to 'popMin' */
-  //printf("== Writing cities with population >= %i in 'resuCities.dat' ==\n", popMin);
-  //saveListOfCities(cities);
-
   return monuments;
 }
-
-
-
 
 void freeListOfMonument(ListOfMonuments * monuments){
   free(monuments->name);
   free(monuments->lon);
   free(monuments->lat);
   free(monuments);
+}
+
+void saveGraph(ListOfMonuments * monuments){
+  FILE* fileOut = NULL;
+  fileOut = fopen("resuGraph.dat", "w");
+  for(int i=0; i<monuments->nbMonument; i++){
+    for(int j=i; j<monuments->nbMonument; j++){
+      fprintf(fileOut, "%i %i\n", i, j);
+    }
+  }
+  fclose(fileOut);
+}
+
+void saveListOfMonuments(ListOfMonuments* monuments){
+  FILE* outputFile = NULL;
+  if( (outputFile = fopen("resuMonument.dat", "w")) == NULL){
+    perror("Could not open file resuCities.dat");
+    exit(-1);
+  }
+
+  for(int i=0; i<monuments->nbMonument; i++)
+    fprintf(outputFile, "%f %f\n", monuments->lon[i], monuments->lat[i]);
+  fclose(outputFile);
 }

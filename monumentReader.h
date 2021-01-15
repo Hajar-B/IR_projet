@@ -14,5 +14,7 @@ struct ListOfMonuments
 ListOfMonuments* createMonuments(int number);
 ListOfMonuments* MonumentsReader();
 void freeListOfMonument(ListOfMonuments * monuments);
+void saveGraph(ListOfMonuments * monuments);
+void saveListOfMonuments(ListOfMonuments* monuments);
 
 #endif
