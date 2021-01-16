@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 
 // *****************************************************************************
 ListOfMonuments* createMonuments(int nbMonument){
@@ -272,5 +273,122 @@ float kruskal_algo(ListOfMonuments * monuments, graphe* g){
   free(t->tab);
   free(t);
 
+  return distance_total;
+}
+
+
+float boruvka_algo(ListOfMonuments * monuments, graphe* g){
+
+  arete* a;
+  int ext;
+  compressionC* tab = (compressionC*)malloc(monuments->nbMonument*sizeof(compressionC));
+  int cheapest[monuments->nbMonument];
+
+  for(int i=0; i<monuments->nbMonument; i++){
+    tab[i].parent = i;
+    tab[i].rank = 0;
+    cheapest[i] = -1;
+  }
+
+  int numTrees = monuments->nbMonument;
+  float distance_total = 0;
+
+  while (numTrees > 1){
+    for(int i=0; i<monuments->nbMonument; i++){
+      cheapest[i] = -1;
+    }
+
+    for(int i=0; i<monuments->nbMonument; i++){
+      for(int j=i+1; j<monuments->nbMonument; j++){
+        int x = find(tab, i);
+        int y = find(tab, j);
+        if(x == y){
+          continue;
+        }
+
+        else{
+          float dist1 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[j], monuments->lat[j]);
+          float dist2 = distance(monuments->lon[cheapest[x]], monuments->lat[cheapest[x]], monuments->lon[j], monuments->lat[j]);
+          if(cheapest[x] == -1 || dist2 > dist1){
+            cheapest[x] = i;
+          }
+          float dist3 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[cheapest[y]], monuments->lat[cheapest[y]]);
+          if(cheapest[y] == -1 || dist3 > dist1){
+            cheapest[y] = i;
+          }
+        }
+      }
+    }
+
+    for(int i=0; i<monuments->nbMonument; i++){
+      for(int j=i+1; j<monuments->nbMonument; j++){
+        if(cheapest[j] != -1){
+          int x = find(tab, i);
+          int y = find(tab, j);
+          if(x == y)
+            continue;
+
+          float dist1 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[j], monuments->lat[j]);
+          a = creer_arete(i,j,monuments->lon[i],monuments->lat[i], monuments->lon[j],monuments->lat[j]);
+          ext = union_find(*a, tab);
+          if(ext == 1){
+            distance_total = distance_total + dist1;
+            g->tab_sommet[g->nb_sommet] = i;
+            g->nb_sommet++;
+            g->tab_sommet[g->nb_sommet] = j;
+            g->nb_sommet++;
+          }
+          numTrees--;
+        }
+      }
+    }
+  }
+  return distance_total;
+}
+
+
+
+
+
+
+
+int minKey(float* poids, int* visite, int taille){
+  int min = INT_MAX;
+  int min_index;
+  for(int i = 0; i < taille; i++){
+    if (visite[i]==0 && poids[i] < min)
+      min = poids[i];
+      min_index = i;
+  }
+  return min_index;
+}
+float prim_algo(ListOfMonuments * monuments, graphe * g){
+  int * parent = (int*)malloc(monuments->nbMonument*sizeof(int));
+  int * visite = (int*)malloc(monuments->nbMonument*sizeof(int));
+  float * poids = (float*)malloc(monuments->nbMonument*sizeof(float));
+  float distance_total = 0;
+
+  for(int i=0; i<monuments->nbMonument; i++){
+    poids[i] = INT_MAX;
+    visite[i] = 0;
+  }
+  poids[0] = 0;
+  parent[0] = -1;
+  for(int j=0; j<monuments->nbMonument-1; j++){
+    int v = minKey(poids, visite, monuments->nbMonument);
+    visite[v] = 1;
+    for(int k=j+1; k<monuments->nbMonument; k++){
+      float dis = distance(monuments->lon[j], monuments->lat[j], monuments->lon[k], monuments->lat[k]);
+      if(visite[k] == 0 && dis < poids[k]){
+        parent[k] = v;
+        poids[k] = poids[j+k];
+        distance_total = distance_total + dis;
+        g->tab_sommet[g->nb_sommet] = j;
+        g->nb_sommet++;
+        g->tab_sommet[g->nb_sommet] = k;
+        g->nb_sommet++;
+      }
+    }
+  }
   return distance_total;
 }

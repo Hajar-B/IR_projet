@@ -66,5 +66,11 @@ int find(compressionC* p, int sommet);
 int union_find(arete a, compressionC* parent);
 
 float kruskal_algo(ListOfMonuments * monuments, graphe* g);
+float boruvka_algo(ListOfMonuments * monuments, graphe* g);
+
+int minKey(float* poids, int* visite, int taille);
+float prim_algo(ListOfMonuments * monuments, graphe * g);
+
+
 
 #endif

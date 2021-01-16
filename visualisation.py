@@ -1,6 +1,6 @@
 # Execution:
 #   python visualisation.py
-"""
+
 from matplotlib import pyplot
 from numpy import loadtxt
 
@@ -23,6 +23,7 @@ pyplot.savefig('result.png')
 
 # show the result
 pyplot.show()
+
 """
 import csv
 import numpy as np
@@ -52,3 +53,4 @@ for x in range(graph.shape[0]):
     folium.PolyLine(c, color="blue", weight=2.5, opacity=0.8).add_to(fmap)
 
 fmap.save('via.html')
+"""
