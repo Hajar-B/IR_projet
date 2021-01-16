@@ -259,7 +259,7 @@ float kruskal_algo(ListOfMonuments * monuments, graphe* g){
   }
   while(t->nb_element != 0){
     tmp = supprimer_tas(t);
-
+    //printf("%f -- ", tmp.distance);
     ext = union_find(tmp, tab);
     if(ext == 1){
       distance_total = distance_total + tmp.distance;
