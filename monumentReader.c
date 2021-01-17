@@ -177,7 +177,7 @@ void KruskalMST(Graph* graph, graphe* g)
 		subsets[v].parent = v;
 		subsets[v].rank = 0;
 	}
-
+  int cpt=0;
 	while (e < V - 1 && i < graph->E) {
 		Edge next_edge = graph->edge[i++];
 
@@ -188,7 +188,9 @@ void KruskalMST(Graph* graph, graphe* g)
 			result[e++] = next_edge;
 			Union(subsets, x, y);
 		}
+    cpt++;
 	}
+  printf("cptf = %d\n", cpt);
 	//printf("Following are the edges in the constructed MST\n");
 	float minimumCost = 0;
 	for (i = 0; i < e; ++i)
@@ -221,14 +223,12 @@ void boruvkaMST(Graph* graph, graphe* g)
 
 	int numTrees = V;
 	float MSTweight = 0;
-	while (numTrees > 1)
-	{
+	while (numTrees > 1){
 		for (int v = 0; v < V; ++v){
 			cheapest[v] = -1;
 		}
 
-		for (int i=0; i<E; i++)
-		{
+		for (int i=0; i<E; i++){
 			int set1 = find(subsets, edge[i].src);
 			int set2 = find(subsets, edge[i].dest);
 			if (set1 == set2){
@@ -260,7 +260,64 @@ void boruvkaMST(Graph* graph, graphe* g)
 			}
 		}
 	}
+	printf("Weight of MST is %f\n", MSTweight);
+	return;
+}
 
+void hbMST(Graph* graph, graphe* g){
+  qsort(graph->edge, graph->E, sizeof(graph->edge[0]), myComp);
+  int V = graph->V, E = graph->E;
+	Edge *edge = graph->edge;
+
+	subset subsets[V];
+	int cheapest[V];
+
+	for (int v = 0; v < V; ++v)
+	{
+		subsets[v].parent = v;
+		subsets[v].rank = 0;
+		cheapest[v] = -1;
+	}
+
+	int numTrees = V;
+	float MSTweight = 0;
+	while (numTrees > 1){
+		for (int v = 0; v < V; ++v){
+			cheapest[v] = -1;
+		}
+
+		for (int i=0; i<E; i++){
+			int set1 = find(subsets, edge[i].src);
+			int set2 = find(subsets, edge[i].dest);
+			if (set1 == set2){
+				continue;
+			}
+			else{
+				if (cheapest[set1] == -1 || edge[cheapest[set1]].weight > edge[i].weight){
+					cheapest[set1] = i;
+				}
+				if (cheapest[set2] == -1 || edge[cheapest[set2]].weight > edge[i].weight){
+					cheapest[set2] = i;
+				}
+			}
+		}
+		for (int i=0; i<V; i++){
+			if (cheapest[i] != -1){
+				int set1 = find(subsets, edge[cheapest[i]].src);
+				int set2 = find(subsets, edge[cheapest[i]].dest);
+				if (set1 == set2)
+					continue;
+				MSTweight += edge[cheapest[i]].weight;
+				//printf("Edge %d-%d included in MST\n", edge[cheapest[i]].src, edge[cheapest[i]].dest);
+				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].src;
+				g->nb_sommet++;
+				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].dest;
+				g->nb_sommet++;
+				Union(subsets, set1, set2);
+				numTrees--;
+			}
+		}
+	}
 	printf("Weight of MST is %f\n", MSTweight);
 	return;
 }
