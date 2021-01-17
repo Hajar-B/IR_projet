@@ -1,10 +1,9 @@
 #include "monumentReader.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <limits.h>
 
 // *****************************************************************************
 ListOfMonuments* createMonuments(int nbMonument){
@@ -112,6 +111,13 @@ void saveListOfMonuments(ListOfMonuments* monuments){
 }
 
 // *****************************************************************************
+graphe* creer_graphe(int n){
+  graphe* g = malloc(sizeof(graphe));
+  g->nb_sommet=0;
+  g->tab_sommet = malloc(n*sizeof(int));
+  return g;
+}
+
 // *****************************************************************************
 float distance(float lon1, float lat1, float lon2, float lat2){
   float distance, val;
@@ -121,274 +127,140 @@ float distance(float lon1, float lat1, float lon2, float lat2){
 }
 
 // *****************************************************************************
-arete* creer_arete(int monument_d, int monument_a, float lon1, float lat1, float lon2, float lat2){
-  arete* a = malloc(sizeof(arete*));
-  a->Monument_D = monument_d;
-  a->Monument_A = monument_a;
-  a->distance = distance(lon1, lat1, lon2, lat2);
-  return a;
+Graph* createGraph(int V, int E)
+{
+	Graph* graph = (Graph*)malloc(sizeof(Graph));
+	graph->V = V;
+	graph->E = E;
+	graph->edge = (Edge*)malloc(E*sizeof(Edge));
+	return graph;
 }
 
-// *****************************************************************************
-tas* creer_tas(int capacite_max){
-  tas* t = malloc(sizeof(tas));
-  t->nb_element = 0;
-  t->capacite_max = capacite_max;
-  t->tab = malloc(capacite_max*sizeof(arete));
-  return t;
+int find(subset subsets[], int i){
+	if (subsets[i].parent != i)
+		subsets[i].parent	= find(subsets, subsets[i].parent);
+	return subsets[i].parent;
 }
 
-// *****************************************************************************
-graphe* creer_graphe(int n){
-  graphe* g = malloc(sizeof(graphe));
-  g->nb_sommet=0;
-  g->tab_sommet = malloc(n*sizeof(int));
-  return g;
+void Union(subset subsets[], int x, int y){
+	int xroot = find(subsets, x);
+	int yroot = find(subsets, y);
+
+	if (subsets[xroot].rank < subsets[yroot].rank)
+		subsets[xroot].parent = yroot;
+	else if (subsets[xroot].rank > subsets[yroot].rank)
+		subsets[yroot].parent = xroot;
+	else{
+		subsets[yroot].parent = xroot;
+		subsets[xroot].rank++;
+	}
 }
 
-// *****************************************************************************
-void entasser(tas* t, int pos){
-  while(t->tab[parent(pos)].distance > t->tab[pos].distance){
-    echanger(t, parent(pos), pos);
-    pos = parent(pos);
-  }
+int myComp(const void* a, const void* b){
+	Edge* a1 = (Edge*)a;
+	Edge* b1 = (Edge*)b;
+	return a1->weight > b1->weight;
 }
 
-// *****************************************************************************
-int parent(int pos){
-  return (pos-1)/2;
+void KruskalMST(Graph* graph, graphe* g)
+{
+	int V = graph->V;
+	Edge result[V];
+	int e = 0;
+	int i = 0;
+
+	qsort(graph->edge, graph->E, sizeof(graph->edge[0]), myComp);
+
+	subset* subsets	= (subset*)malloc(V * sizeof(subset));
+
+	for (int v = 0; v < V; ++v) {
+		subsets[v].parent = v;
+		subsets[v].rank = 0;
+	}
+
+	while (e < V - 1 && i < graph->E) {
+		Edge next_edge = graph->edge[i++];
+
+		int x = find(subsets, next_edge.src);
+		int y = find(subsets, next_edge.dest);
+
+		if (x != y) {
+			result[e++] = next_edge;
+			Union(subsets, x, y);
+		}
+	}
+	//printf("Following are the edges in the constructed MST\n");
+	float minimumCost = 0;
+	for (i = 0; i < e; ++i)
+	{
+		//printf("%d -- %d == %f\n", result[i].src, result[i].dest, result[i].weight);
+		minimumCost += result[i].weight;
+		g->tab_sommet[g->nb_sommet] = result[i].src;
+		g->nb_sommet++;
+		g->tab_sommet[g->nb_sommet] = result[i].dest;
+		g->nb_sommet++;
+	}
+	printf("Minimum Cost Spanning tree : %f\n",minimumCost);
+	return;
 }
 
-// *****************************************************************************
-void echanger(tas* t, int pos1, int pos2){
-  arete tmp;
+void boruvkaMST(Graph* graph, graphe* g)
+{
+	int V = graph->V, E = graph->E;
+	Edge *edge = graph->edge;
 
-  tmp = (t->tab[pos1]);
-  t->tab[pos1] = t->tab[pos2];
-  t->tab[pos2] = tmp;
-}
+	subset subsets[V];
+	int cheapest[V];
 
-// *****************************************************************************
-void inserer_tas(tas* t, arete* a){
-  if(t->nb_element == t->capacite_max){
-    printf("tableau plein\n");
-    return;
-  }
-  t->tab[t->nb_element] = *a;
-  entasser(t, t->nb_element);
-  t->nb_element++;
-}
+	for (int v = 0; v < V; ++v)
+	{
+		subsets[v].parent = v;
+		subsets[v].rank = 0;
+		cheapest[v] = -1;
+	}
 
-// *****************************************************************************
-int filsDroit(int pos){
-  return 2*pos+2;
-}
+	int numTrees = V;
+	float MSTweight = 0;
+	while (numTrees > 1)
+	{
+		for (int v = 0; v < V; ++v){
+			cheapest[v] = -1;
+		}
 
-// *****************************************************************************
-int filsGauche(int pos){
-  return 2*pos+1;
-}
+		for (int i=0; i<E; i++)
+		{
+			int set1 = find(subsets, edge[i].src);
+			int set2 = find(subsets, edge[i].dest);
+			if (set1 == set2){
+				continue;
+			}
+			else{
+				if (cheapest[set1] == -1 || edge[cheapest[set1]].weight > edge[i].weight){
+					cheapest[set1] = i;
+				}
+				if (cheapest[set2] == -1 || edge[cheapest[set2]].weight > edge[i].weight){
+					cheapest[set2] = i;
+				}
+			}
+		}
+		for (int i=0; i<V; i++){
+			if (cheapest[i] != -1){
+				int set1 = find(subsets, edge[cheapest[i]].src);
+				int set2 = find(subsets, edge[cheapest[i]].dest);
+				if (set1 == set2)
+					continue;
+				MSTweight += edge[cheapest[i]].weight;
+				//printf("Edge %d-%d included in MST\n", edge[cheapest[i]].src, edge[cheapest[i]].dest);
+				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].src;
+				g->nb_sommet++;
+				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].dest;
+				g->nb_sommet++;
+				Union(subsets, set1, set2);
+				numTrees--;
+			}
+		}
+	}
 
-// *****************************************************************************
-int plusPetitEnfant(tas* t, int pos){
-  if(t->tab[filsGauche(pos)].distance < t->tab[filsDroit(pos)].distance)
-    return filsGauche(pos);
-  return filsDroit(pos);
-}
-
-// *****************************************************************************
-arete supprimer_tas(tas* t){
-  int pos=0;
-  int tmp=0;
-  int continu=0;
-  arete a = t->tab[0];
-  echanger(t, 0, t->nb_element-1);
-
-  while((pos < t->nb_element/2) && continu==0){
-    if((t->tab[pos].distance > t->tab[plusPetitEnfant(t,pos)].distance) && (plusPetitEnfant(t,pos) < t->nb_element-1)){
-      tmp = plusPetitEnfant(t,pos);
-      echanger(t, pos, plusPetitEnfant(t,pos));
-      pos = tmp;
-    }
-    else
-      continu = 1;
-  }
-  t->nb_element--;
-  return a;
-}
-
-// *****************************************************************************
-int find(compressionC* p, int sommet){
-  if(p[sommet].parent != sommet)
-    p[sommet].parent = find(p, p[sommet].parent);
-  return p[sommet].parent;
-}
-
-// *****************************************************************************
-int union_find(arete a, compressionC* parent){
-  int x = find(parent, a.Monument_D);
-  int y = find(parent, a.Monument_A);
-  if (x==y)
-    return 0;
-  if(parent[x].rank < parent[y].rank)
-    parent[x].parent = y;
-  else if (parent[x].rank > parent[y].rank)
-    parent[y].parent = x;
-  else{
-    parent[y].parent = x;
-    parent[x].rank++;
-  }
-  return 1;
-}
-
-// *****************************************************************************
-float kruskal_algo(ListOfMonuments * monuments, graphe* g){
-  tas* t = creer_tas((monuments->nbMonument*(monuments->nbMonument-1))/2);
-  arete* a;
-  arete tmp;
-  float distance_total = 0;
-  int ext;
-  compressionC* tab = (compressionC*)malloc(monuments->nbMonument*sizeof(compressionC));
-
-  for(int i=0; i<monuments->nbMonument; i++){
-    tab[i].parent = i;
-    tab[i].rank = 0;
-    for(int j=i+1; j<monuments->nbMonument; j++){
-      a = creer_arete(i,j,monuments->lon[i],monuments->lat[i], monuments->lon[j],monuments->lat[j]);
-      inserer_tas(t,a);
-    }
-  }
-  while(t->nb_element != 0){
-    tmp = supprimer_tas(t);
-    //printf("%f -- ", tmp.distance);
-    ext = union_find(tmp, tab);
-    if(ext == 1){
-      distance_total = distance_total + tmp.distance;
-      g->tab_sommet[g->nb_sommet] = tmp.Monument_D;
-      g->nb_sommet++;
-      g->tab_sommet[g->nb_sommet] = tmp.Monument_A;
-      g->nb_sommet++;
-    }
-  }
-  free(t->tab);
-  free(t);
-
-  return distance_total;
-}
-
-
-float boruvka_algo(ListOfMonuments * monuments, graphe* g){
-
-  arete* a;
-  int ext;
-  compressionC* tab = (compressionC*)malloc(monuments->nbMonument*sizeof(compressionC));
-  int cheapest[monuments->nbMonument];
-
-  for(int i=0; i<monuments->nbMonument; i++){
-    tab[i].parent = i;
-    tab[i].rank = 0;
-    cheapest[i] = -1;
-  }
-
-  int numTrees = monuments->nbMonument;
-  float distance_total = 0;
-
-  while (numTrees > 1){
-    for(int i=0; i<monuments->nbMonument; i++){
-      cheapest[i] = -1;
-    }
-
-    for(int i=0; i<monuments->nbMonument; i++){
-      for(int j=i+1; j<monuments->nbMonument; j++){
-        int x = find(tab, i);
-        int y = find(tab, j);
-        if(x == y){
-          continue;
-        }
-
-        else{
-          float dist1 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[j], monuments->lat[j]);
-          float dist2 = distance(monuments->lon[cheapest[x]], monuments->lat[cheapest[x]], monuments->lon[j], monuments->lat[j]);
-          if(cheapest[x] == -1 || dist2 > dist1){
-            cheapest[x] = i;
-          }
-          float dist3 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[cheapest[y]], monuments->lat[cheapest[y]]);
-          if(cheapest[y] == -1 || dist3 > dist1){
-            cheapest[y] = i;
-          }
-        }
-      }
-    }
-
-    for(int i=0; i<monuments->nbMonument; i++){
-      for(int j=i+1; j<monuments->nbMonument; j++){
-        if(cheapest[j] != -1){
-          int x = find(tab, i);
-          int y = find(tab, j);
-          if(x == y)
-            continue;
-
-          float dist1 = distance(monuments->lon[i], monuments->lat[i], monuments->lon[j], monuments->lat[j]);
-          a = creer_arete(i,j,monuments->lon[i],monuments->lat[i], monuments->lon[j],monuments->lat[j]);
-          ext = union_find(*a, tab);
-          if(ext == 1){
-            distance_total = distance_total + dist1;
-            g->tab_sommet[g->nb_sommet] = i;
-            g->nb_sommet++;
-            g->tab_sommet[g->nb_sommet] = j;
-            g->nb_sommet++;
-          }
-          numTrees--;
-        }
-      }
-    }
-  }
-  return distance_total;
-}
-
-
-
-
-
-
-
-int minKey(float* poids, int* visite, int taille){
-  int min = INT_MAX;
-  int min_index;
-  for(int i = 0; i < taille; i++){
-    if (visite[i]==0 && poids[i] < min)
-      min = poids[i];
-      min_index = i;
-  }
-  return min_index;
-}
-float prim_algo(ListOfMonuments * monuments, graphe * g){
-  int * parent = (int*)malloc(monuments->nbMonument*sizeof(int));
-  int * visite = (int*)malloc(monuments->nbMonument*sizeof(int));
-  float * poids = (float*)malloc(monuments->nbMonument*sizeof(float));
-  float distance_total = 0;
-
-  for(int i=0; i<monuments->nbMonument; i++){
-    poids[i] = INT_MAX;
-    visite[i] = 0;
-  }
-  poids[0] = 0;
-  parent[0] = -1;
-  for(int j=0; j<monuments->nbMonument-1; j++){
-    int v = minKey(poids, visite, monuments->nbMonument);
-    visite[v] = 1;
-    for(int k=j+1; k<monuments->nbMonument; k++){
-      float dis = distance(monuments->lon[j], monuments->lat[j], monuments->lon[k], monuments->lat[k]);
-      if(visite[k] == 0 && dis < poids[k]){
-        parent[k] = v;
-        poids[k] = poids[j+k];
-        distance_total = distance_total + dis;
-        g->tab_sommet[g->nb_sommet] = j;
-        g->nb_sommet++;
-        g->tab_sommet[g->nb_sommet] = k;
-        g->nb_sommet++;
-      }
-    }
-  }
-  return distance_total;
+	printf("Weight of MST is %f\n", MSTweight);
+	return;
 }
