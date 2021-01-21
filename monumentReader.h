@@ -54,6 +54,13 @@ void Union(subset subsets[], int x, int y);
 int myComp(const void* a, const void* b);
 void KruskalMST(Graph* graph, graphe* g);
 void boruvkaMST(Graph* graph, graphe* g);
+void primMST(Graph* graph, graphe* g);
+
 void hbMST(Graph* graph, graphe* g);
 
+/*
+void hbMST(Graph* graph, graphe* g);
+void hb2MST(Graph* graph, graphe* g);
+void hb3MST(Graph* graph, graphe* g);
+*/
 #endif

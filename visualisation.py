@@ -23,11 +23,12 @@ pyplot.savefig('result.png')
 
 # show the result
 pyplot.show()
-
+"""
 
 import csv
 import numpy as np
 from numpy import loadtxt
+import folium
 lon = []
 lat = []
 with open('liste-coordonnees.csv', 'r') as data:
@@ -37,7 +38,6 @@ with open('liste-coordonnees.csv', 'r') as data:
         lat = np.append(lat, float(row[1]))
 data.close()
 
-import folium
 c = (lon[0], lat[1])
 
 fmap = folium.Map(location=c, title = 'carte', zoom_start = 6)
@@ -53,3 +53,4 @@ for x in range(graph.shape[0]):
     folium.PolyLine(c, color="blue", weight=2.5, opacity=0.8).add_to(fmap)
 
 fmap.save('via.html')
+"""

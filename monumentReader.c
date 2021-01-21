@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
+#include <stdbool.h>
 
 // *****************************************************************************
 ListOfMonuments* createMonuments(int nbMonument){
@@ -177,7 +179,6 @@ void KruskalMST(Graph* graph, graphe* g)
 		subsets[v].parent = v;
 		subsets[v].rank = 0;
 	}
-  int cpt=0;
 	while (e < V - 1 && i < graph->E) {
 		Edge next_edge = graph->edge[i++];
 
@@ -188,21 +189,17 @@ void KruskalMST(Graph* graph, graphe* g)
 			result[e++] = next_edge;
 			Union(subsets, x, y);
 		}
-    cpt++;
 	}
-  printf("cptf = %d\n", cpt);
-	//printf("Following are the edges in the constructed MST\n");
 	float minimumCost = 0;
 	for (i = 0; i < e; ++i)
 	{
-		//printf("%d -- %d == %f\n", result[i].src, result[i].dest, result[i].weight);
 		minimumCost += result[i].weight;
 		g->tab_sommet[g->nb_sommet] = result[i].src;
 		g->nb_sommet++;
 		g->tab_sommet[g->nb_sommet] = result[i].dest;
 		g->nb_sommet++;
 	}
-	printf("Minimum Cost Spanning tree : %f\n",minimumCost);
+	printf("Weight of MST is %f\n",minimumCost);
 	return;
 }
 
@@ -224,7 +221,7 @@ void boruvkaMST(Graph* graph, graphe* g)
 	int numTrees = V;
 	float MSTweight = 0;
 	while (numTrees > 1){
-		for (int v = 0; v < V; ++v){
+	  for (int v = 0; v < V; ++v){
 			cheapest[v] = -1;
 		}
 
@@ -250,7 +247,6 @@ void boruvkaMST(Graph* graph, graphe* g)
 				if (set1 == set2)
 					continue;
 				MSTweight += edge[cheapest[i]].weight;
-				//printf("Edge %d-%d included in MST\n", edge[cheapest[i]].src, edge[cheapest[i]].dest);
 				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].src;
 				g->nb_sommet++;
 				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].dest;
@@ -264,13 +260,139 @@ void boruvkaMST(Graph* graph, graphe* g)
 	return;
 }
 
+int minKey(float key[], bool mstSet[], int V)
+{
+	float min = INT_MAX;
+	int min_index;
+	for (int a = 0; a < V; a++){
+		if (mstSet[a] == false){
+			if(key[a] < min){
+				min = key[a];
+				min_index = a;
+			}
+		}
+	}
+	return min_index;
+}
+
+void primMST(Graph* graph, graphe* g){
+  int V = graph->V;
+	int E = graph->E;
+	int parent[V];
+	float key[V];
+	bool mstSet[V];
+	float dis = 0;
+
+	int cheapest[V];
+
+
+	for (int i = 0; i < V; i++)
+		key[i] = INT_MAX, mstSet[i] = false;
+
+	key[0] = 0;
+	parent[0] = -1;
+
+	for(int count = 0; count < V - 1; count++){
+		int u = minKey(key, mstSet, V);
+		mstSet[u] = true;
+		for(int v = 0; v<E; v++){
+			if(graph->edge[v].src == u){
+				int w = graph->edge[v].dest;
+				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
+					key[w] = graph->edge[v].weight;
+					parent[w] = u;
+				}
+			}
+			else if(graph->edge[v].dest == u){
+				int w = graph->edge[v].src;
+				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
+					key[w] = graph->edge[v].weight;
+					parent[w] = u;
+				}
+			}
+		}
+	}
+
+	for (int i = 1; i < graph->V; i++){
+    dis = dis + key[i];
+    g->tab_sommet[g->nb_sommet] = parent[i];
+    g->nb_sommet++;
+    g->tab_sommet[g->nb_sommet] = i;
+    g->nb_sommet++;
+	}
+  printf("Weight of MST is %f\n", dis);
+	return;
+}
+
 void hbMST(Graph* graph, graphe* g){
-  qsort(graph->edge, graph->E, sizeof(graph->edge[0]), myComp);
+  int V = graph->V;
+	int E = graph->E;
+	int parent[V];
+	float key[V];
+	bool mstSet[V];
+	float dis = 0;
+
+	int cheapest[V];
+
+	for (int i = 0; i < V; i++)
+		key[i] = INT_MAX, mstSet[i] = false;
+
+	key[0] = 0;
+	parent[0] = -1;
+
+	for(int count = 0; count < V - 1; count++){
+		int u = minKey(key, mstSet, V);
+		mstSet[u] = true;
+		for(int v = 0; v<E; v++){
+			if(graph->edge[v].src == u){
+				int w = graph->edge[v].dest;
+				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
+					key[w] = graph->edge[v].weight;
+					parent[w] = u;
+				}
+			}
+			else if(graph->edge[v].dest == u){
+				int w = graph->edge[v].src;
+				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
+					key[w] = graph->edge[v].weight;
+					parent[w] = u;
+				}
+			}
+		}
+	}
+
+	for (int i = 1; i < graph->V; i++){
+    dis = dis + key[i];
+    g->tab_sommet[g->nb_sommet] = parent[i];
+    g->nb_sommet++;
+    g->tab_sommet[g->nb_sommet] = i;
+    g->nb_sommet++;
+	}
+  printf("Weight of MST is %f\n", dis);
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+void hbMST(Graph* graph, graphe* g){
   int V = graph->V, E = graph->E;
 	Edge *edge = graph->edge;
 
 	subset subsets[V];
 	int cheapest[V];
+
+  qsort(graph->edge, graph->E, sizeof(graph->edge[0]), myComp);
 
 	for (int v = 0; v < V; ++v)
 	{
@@ -282,7 +404,7 @@ void hbMST(Graph* graph, graphe* g){
 	int numTrees = V;
 	float MSTweight = 0;
 	while (numTrees > 1){
-		for (int v = 0; v < V; ++v){
+	  for (int v = 0; v < V; ++v){
 			cheapest[v] = -1;
 		}
 
@@ -308,7 +430,6 @@ void hbMST(Graph* graph, graphe* g){
 				if (set1 == set2)
 					continue;
 				MSTweight += edge[cheapest[i]].weight;
-				//printf("Edge %d-%d included in MST\n", edge[cheapest[i]].src, edge[cheapest[i]].dest);
 				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].src;
 				g->nb_sommet++;
 				g->tab_sommet[g->nb_sommet] = edge[cheapest[i]].dest;
@@ -321,3 +442,4 @@ void hbMST(Graph* graph, graphe* g){
 	printf("Weight of MST is %f\n", MSTweight);
 	return;
 }
+*/
