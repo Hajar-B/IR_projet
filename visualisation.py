@@ -17,13 +17,14 @@ for x in range(graph.shape[0]):
 
 pyplot.xlabel('Longitude')
 pyplot.ylabel('Latitude')
+pyplot.title("Itinéraire reliant tous les monuments nationaux de France")
 
 # save in a PNG file
 pyplot.savefig('result.png')
 
 # show the result
 pyplot.show()
-"""
+
 
 import csv
 import numpy as np
@@ -53,4 +54,3 @@ for x in range(graph.shape[0]):
     folium.PolyLine(c, color="blue", weight=2.5, opacity=0.8).add_to(fmap)
 
 fmap.save('via.html')
-"""

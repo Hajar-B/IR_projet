@@ -58,9 +58,4 @@ void primMST(Graph* graph, graphe* g);
 
 void hbMST(Graph* graph, graphe* g);
 
-/*
-void hbMST(Graph* graph, graphe* g);
-void hb2MST(Graph* graph, graphe* g);
-void hb3MST(Graph* graph, graphe* g);
-*/
 #endif

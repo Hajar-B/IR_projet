@@ -325,74 +325,18 @@ void primMST(Graph* graph, graphe* g){
 }
 
 void hbMST(Graph* graph, graphe* g){
-  int V = graph->V;
-	int E = graph->E;
-	int parent[V];
-	float key[V];
-	bool mstSet[V];
-	float dis = 0;
 
-	int cheapest[V];
-
-	for (int i = 0; i < V; i++)
-		key[i] = INT_MAX, mstSet[i] = false;
-
-	key[0] = 0;
-	parent[0] = -1;
-
-	for(int count = 0; count < V - 1; count++){
-		int u = minKey(key, mstSet, V);
-		mstSet[u] = true;
-		for(int v = 0; v<E; v++){
-			if(graph->edge[v].src == u){
-				int w = graph->edge[v].dest;
-				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
-					key[w] = graph->edge[v].weight;
-					parent[w] = u;
-				}
-			}
-			else if(graph->edge[v].dest == u){
-				int w = graph->edge[v].src;
-				if(mstSet[w] == false && graph->edge[v].weight < key[w]){
-					key[w] = graph->edge[v].weight;
-					parent[w] = u;
-				}
-			}
-		}
-	}
-
-	for (int i = 1; i < graph->V; i++){
-    dis = dis + key[i];
-    g->tab_sommet[g->nb_sommet] = parent[i];
-    g->nb_sommet++;
-    g->tab_sommet[g->nb_sommet] = i;
-    g->nb_sommet++;
-	}
-  printf("Weight of MST is %f\n", dis);
-	return;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-void hbMST(Graph* graph, graphe* g){
   int V = graph->V, E = graph->E;
-	Edge *edge = graph->edge;
+  Edge *edge = graph->edge;
 
-	subset subsets[V];
-	int cheapest[V];
-
+  int cheapest[V];
   qsort(graph->edge, graph->E, sizeof(graph->edge[0]), myComp);
+	subset* subsets	= (subset*)malloc(V * sizeof(subset));
+
+	for (int v = 0; v < V; ++v) {
+		subsets[v].parent = v;
+		subsets[v].rank = 0;
+	}
 
 	for (int v = 0; v < V; ++v)
 	{
@@ -440,6 +384,6 @@ void hbMST(Graph* graph, graphe* g){
 		}
 	}
 	printf("Weight of MST is %f\n", MSTweight);
-	return;
+
+  return;
 }
-*/

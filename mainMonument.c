@@ -60,7 +60,7 @@ int main()
       cpt++;
     }
   }
-  /*
+
   printf("\t Kruskal Algo\n");
   clock_gettime(clk_id1, &before1);
 	KruskalMST(graph, g);
@@ -81,21 +81,14 @@ int main()
   clock_gettime(clk_id3, &after3);
   analyzer_append(time_analysis3, after3.tv_nsec-before3.tv_nsec);
   fprintf(stderr,"Total cost: %Lf ns\n\n", get_total_cost(time_analysis3));
-  */
+
   printf("\t Mon Algo\n");
   clock_gettime(clk_id4, &before4);
   hbMST(graph, g4);
   clock_gettime(clk_id4, &after4);
   analyzer_append(time_analysis4, after4.tv_nsec-before4.tv_nsec);
   fprintf(stderr,"Total cost: %Lf ns\n\n", get_total_cost(time_analysis4));
-  /*
-  printf("\t Mon3 Algo\n");
-  clock_gettime(clk_id6, &before6);
-  hb3MST(graph, g6);
-  clock_gettime(clk_id6, &after6);
-  analyzer_append(time_analysis6, after6.tv_nsec-before6.tv_nsec);
-  fprintf(stderr,"Total cost: %Lf ns\n\n", get_total_cost(time_analysis6));
-  */
+
   saveGraph(g4);
   saveListOfMonuments(monuments);
   analyzer_destroy(time_analysis1);
