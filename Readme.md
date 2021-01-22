@@ -1,13 +1,18 @@
 # Prérequis :
 >> sudo apt install python3-pip
+
 >> pip3 install matplotlib
+
 >> pip3 install folium
 
 # Exécution des scripts:
 ## Commandes :
 >> gcc graphe -o analyzer.c monumentReader.c mainMonument.c 
+
 >> ./graphe
+
 >> python3 visualisation.py
+
 ## Visualisation de la carte
 - double click sur le fichier 'via.html'
 - une page web s'ouvrira sur votre navigateur
